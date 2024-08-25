@@ -11,6 +11,7 @@ type Config struct {
 	App    AppConfig
 	GRPC   GRPCConfig
 	Logger LoggerConfig
+	Email  EmailConfig
 }
 
 // AppConfig holds application-level configuration
@@ -34,6 +35,25 @@ type LoggerConfig struct {
 	Output   string
 	FilePath string
 	Service  string
+}
+
+// EmailConfig holds Email provider configuration
+type EmailConfig struct {
+	Provider string // smtp, resend, etc.
+
+	// SMTP
+	SMTPHost     string
+	SMTPPort     int
+	SMTPUsername string
+	SMTPPassword string
+	SMTPUseTLS   bool
+
+	// Resend
+	ResendAPIKey string
+
+	// Sender
+	From     string
+	FromName string
 }
 
 // Load reads configuration from environment variables and validates it.
@@ -60,6 +80,24 @@ func Load() (*Config, error) {
 			Output:   getEnv("LOG_OUTPUT", defaultLogOutput(env)),
 			FilePath: getEnv("LOG_FILE_PATH", "logs/app.log"),
 			Service:  getEnv("LOG_SERVICE", "kfc-notification"),
+		},
+
+		Email: EmailConfig{
+			Provider: getEnv("EMAIL_PROVIDER", "smtp"),
+
+			// SMTP
+			SMTPHost:     getEnv("SMTP_HOST", "smtp.yandex.ru"),
+			SMTPPort:     getEnvInt("SMTP_PORT", 465),
+			SMTPUsername: getEnv("SMTP_USERNAME", ""),
+			SMTPPassword: getEnv("SMTP_PASSWORD", ""),
+			SMTPUseTLS:   getEnvBool("SMTP_USE_TLS", true),
+
+			// Resend
+			ResendAPIKey: getEnv("RESEND_API_KEY", ""),
+
+			// Sender
+			From:     getEnv("EMAIL_FROM", "noreply@kfc.ru"),
+			FromName: getEnv("EMAIL_FROM_NAME", "KFC Russia"),
 		},
 	}
 
@@ -99,6 +137,27 @@ func (c *Config) Validate() error {
 		if !isValidPort(port) {
 			errors = append(errors, fmt.Sprintf("invalid %s: %q", name, port))
 		}
+	}
+
+	switch strings.ToLower(c.Email.Provider) {
+	case "smtp":
+		if c.Email.SMTPHost == "" {
+			errors = append(errors, "SMTP_HOST is required when EMAIL_PROVIDER=smtp")
+		}
+		if c.Email.From == "" {
+			errors = append(errors, "EMAIL_FROM is required when EMAIL_PROVIDER=smtp")
+		}
+	case "resend":
+		if c.Email.ResendAPIKey == "" {
+			errors = append(errors, "RESEND_API_KEY is required when EMAIL_PROVIDER=resend")
+		}
+		if c.Email.From == "" {
+			errors = append(errors, "EMAIL_FROM is required when EMAIL_PROVIDER=resend")
+		}
+	case "log", "":
+		// no validation needed
+	default:
+		errors = append(errors, fmt.Sprintf("invalid EMAIL_PROVIDER: %q", c.Email.Provider))
 	}
 
 	if len(errors) > 0 {

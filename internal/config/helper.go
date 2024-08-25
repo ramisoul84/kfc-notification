@@ -126,3 +126,17 @@ func getEnvBool(key string, fallback bool) bool {
 
 	return b
 }
+
+// getEnvInt retrieves an integer environment variable
+func getEnvInt(key string, fallback int) int {
+	v := os.Getenv(key)
+	if strings.TrimSpace(v) == "" {
+		return fallback
+	}
+
+	n, err := strconv.Atoi(strings.TrimSpace(v))
+	if err != nil {
+		panic(fmt.Sprintf("environment variable %q must be an integer, got %q", key, v))
+	}
+	return n
+}
