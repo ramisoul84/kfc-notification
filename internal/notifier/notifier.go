@@ -3,6 +3,7 @@ package notifier
 import (
 	"context"
 	"fmt"
+	"time"
 
 	emailprovider "github.com/ramisoul84/kfc-notification/internal/provider/email_provider"
 	"github.com/ramisoul84/kfc-notification/pkg/logger"
@@ -48,5 +49,58 @@ func (n *Notifier) SendWelcomeEmail(ctx context.Context, to, role, password stri
 	}
 
 	n.log.Info("welcome email sent", "to", to)
+	return nil
+}
+
+type DevicePairingEmailInput struct {
+	To             string
+	RestaurantName string
+	ExpiresAt      time.Time
+	Devices        []DevicePairingItem
+}
+
+type DevicePairingItem struct {
+	SerialNumber string
+	DeviceType   string
+	Code         string
+}
+
+func (n *Notifier) SendDevicePairingEmail(ctx context.Context, in *DevicePairingEmailInput) error {
+	if in == nil || in.To == "" {
+		return fmt.Errorf("device pairing email: recipient is required")
+	}
+
+	devices := make([]map[string]string, 0, len(in.Devices))
+	for _, d := range in.Devices {
+		devices = append(devices, map[string]string{
+			"SerialNumber": d.SerialNumber,
+			"DeviceType":   d.DeviceType,
+			"Code":         d.Code,
+		})
+	}
+
+	body, err := n.renderer.render("device_pairing", map[string]any{
+		"RestaurantName": in.RestaurantName,
+		"ExpiresAt":      in.ExpiresAt.Format("15:04 MST"),
+		"Devices":        devices,
+	})
+	if err != nil {
+		return err
+	}
+
+	subject := "Device pairing codes"
+	if in.RestaurantName != "" {
+		subject = "Device pairing codes — " + in.RestaurantName
+	}
+
+	if err := n.email.Send(ctx, in.To, subject, body); err != nil {
+		n.log.Error("device pairing email failed", "to", in.To, "error", err)
+		return fmt.Errorf("device pairing email: %w", err)
+	}
+
+	n.log.Info("device pairing email sent",
+		"to", in.To,
+		"device_count", len(in.Devices),
+	)
 	return nil
 }
