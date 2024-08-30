@@ -6,24 +6,27 @@ import (
 	"time"
 
 	emailprovider "github.com/ramisoul84/kfc-notification/internal/provider/email_provider"
+	smsprovider "github.com/ramisoul84/kfc-notification/internal/provider/sms_provider"
 	"github.com/ramisoul84/kfc-notification/pkg/logger"
 )
 
 // Notifier renders templates and dispatches notifications.
 type Notifier struct {
 	email    emailprovider.EmailProvider
+	sms      smsprovider.SmsProvider
 	renderer *renderer
 	log      *logger.Logger
 }
 
 // New creates a Notifier, parsing all embedded templates at startup.
-func New(email emailprovider.EmailProvider, log *logger.Logger) (*Notifier, error) {
+func New(email emailprovider.EmailProvider, sms smsprovider.SmsProvider, log *logger.Logger) (*Notifier, error) {
 	r, err := newRenderer()
 	if err != nil {
 		return nil, err
 	}
 	return &Notifier{
 		email:    email,
+		sms:      sms,
 		renderer: r,
 		log:      log,
 	}, nil
@@ -102,5 +105,23 @@ func (n *Notifier) SendDevicePairingEmail(ctx context.Context, in *DevicePairing
 		"to", in.To,
 		"device_count", len(in.Devices),
 	)
+	return nil
+}
+
+// SendLoginCode texts a one-time sign-in code to a customer.
+func (n *Notifier) SendLoginCode(ctx context.Context, phone, code string, validFor time.Duration) error {
+	if phone == "" || code == "" {
+		return fmt.Errorf("login code: phone and code are required")
+	}
+	minutes := int(validFor.Minutes())
+	if minutes < 1 {
+		minutes = 1
+	}
+	text := fmt.Sprintf("KFC: your sign-in code is %s. It expires in %d min. Never share it.", code, minutes)
+	if err := n.sms.Send(ctx, phone, text); err != nil {
+		n.log.Error("login code sms failed", "error", err)
+		return fmt.Errorf("login code: %w", err)
+	}
+	n.log.Info("login code sent")
 	return nil
 }

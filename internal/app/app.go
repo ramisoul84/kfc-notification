@@ -8,6 +8,7 @@ import (
 	"github.com/ramisoul84/kfc-notification/internal/config"
 	"github.com/ramisoul84/kfc-notification/internal/notifier"
 	emailprovider "github.com/ramisoul84/kfc-notification/internal/provider/email_provider"
+	smsprovider "github.com/ramisoul84/kfc-notification/internal/provider/sms_provider"
 	grpcTransport "github.com/ramisoul84/kfc-notification/internal/transport/grpc"
 	"github.com/ramisoul84/kfc-notification/pkg/logger"
 )
@@ -38,8 +39,14 @@ func New(cfg *config.Config) (*App, error) {
 	}
 	log.Info("email provider ready", "provider", cfg.Email.Provider)
 
+	smsProvider, err := smsprovider.NewSmsProvider(cfg.SMS, log)
+	if err != nil {
+		return nil, fmt.Errorf("sms provider: %w", err)
+	}
+	log.Info("sms provider ready", "provider", cfg.SMS.Provider)
+
 	// Notifier (business)
-	n, err := notifier.New(emailProvider, log)
+	n, err := notifier.New(emailProvider, smsProvider, log)
 	if err != nil {
 		return nil, fmt.Errorf("notifier: %w", err)
 	}

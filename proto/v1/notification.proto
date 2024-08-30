@@ -9,6 +9,19 @@ import "google/protobuf/timestamp.proto";
 service NotificationService {
   rpc SendWelcomeEmail(SendWelcomeEmailRequest) returns (SendWelcomeEmailResponse);
   rpc SendDevicePairingEmail(SendDevicePairingEmailRequest) returns (SendDevicePairingEmailResponse);
+  rpc SendLoginCode(SendLoginCodeRequest) returns (SendLoginCodeResponse);
+}
+
+// ─────────── Customer sign-in code (SMS) ───────────
+
+message SendLoginCodeRequest {
+  string phone         = 1; // E.164, e.g. +79991234567
+  string code          = 2;
+  int32  valid_seconds = 3;
+}
+
+message SendLoginCodeResponse {
+  bool success = 1;
 }
 
 // ─────────── Welcome Email ───────────

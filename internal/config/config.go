@@ -12,6 +12,7 @@ type Config struct {
 	GRPC   GRPCConfig
 	Logger LoggerConfig
 	Email  EmailConfig
+	SMS    SMSConfig
 }
 
 // AppConfig holds application-level configuration
@@ -35,6 +36,11 @@ type LoggerConfig struct {
 	Output   string
 	FilePath string
 	Service  string
+}
+
+// SMSConfig holds SMS provider configuration.
+type SMSConfig struct {
+	Provider string // log
 }
 
 // EmailConfig holds Email provider configuration
@@ -80,6 +86,10 @@ func Load() (*Config, error) {
 			Output:   getEnv("LOG_OUTPUT", defaultLogOutput(env)),
 			FilePath: getEnv("LOG_FILE_PATH", "logs/app.log"),
 			Service:  getEnv("LOG_SERVICE", "kfc-notification"),
+		},
+
+		SMS: SMSConfig{
+			Provider: getEnv("SMS_PROVIDER", "log"),
 		},
 
 		Email: EmailConfig{

@@ -8,7 +8,6 @@ package notificationv1
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -22,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	NotificationService_SendWelcomeEmail_FullMethodName       = "/notification.v1.NotificationService/SendWelcomeEmail"
 	NotificationService_SendDevicePairingEmail_FullMethodName = "/notification.v1.NotificationService/SendDevicePairingEmail"
+	NotificationService_SendLoginCode_FullMethodName          = "/notification.v1.NotificationService/SendLoginCode"
 )
 
 // NotificationServiceClient is the client API for NotificationService service.
@@ -30,6 +30,7 @@ const (
 type NotificationServiceClient interface {
 	SendWelcomeEmail(ctx context.Context, in *SendWelcomeEmailRequest, opts ...grpc.CallOption) (*SendWelcomeEmailResponse, error)
 	SendDevicePairingEmail(ctx context.Context, in *SendDevicePairingEmailRequest, opts ...grpc.CallOption) (*SendDevicePairingEmailResponse, error)
+	SendLoginCode(ctx context.Context, in *SendLoginCodeRequest, opts ...grpc.CallOption) (*SendLoginCodeResponse, error)
 }
 
 type notificationServiceClient struct {
@@ -60,12 +61,23 @@ func (c *notificationServiceClient) SendDevicePairingEmail(ctx context.Context, 
 	return out, nil
 }
 
+func (c *notificationServiceClient) SendLoginCode(ctx context.Context, in *SendLoginCodeRequest, opts ...grpc.CallOption) (*SendLoginCodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendLoginCodeResponse)
+	err := c.cc.Invoke(ctx, NotificationService_SendLoginCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NotificationServiceServer is the server API for NotificationService service.
 // All implementations must embed UnimplementedNotificationServiceServer
 // for forward compatibility.
 type NotificationServiceServer interface {
 	SendWelcomeEmail(context.Context, *SendWelcomeEmailRequest) (*SendWelcomeEmailResponse, error)
 	SendDevicePairingEmail(context.Context, *SendDevicePairingEmailRequest) (*SendDevicePairingEmailResponse, error)
+	SendLoginCode(context.Context, *SendLoginCodeRequest) (*SendLoginCodeResponse, error)
 	mustEmbedUnimplementedNotificationServiceServer()
 }
 
@@ -81,6 +93,9 @@ func (UnimplementedNotificationServiceServer) SendWelcomeEmail(context.Context, 
 }
 func (UnimplementedNotificationServiceServer) SendDevicePairingEmail(context.Context, *SendDevicePairingEmailRequest) (*SendDevicePairingEmailResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SendDevicePairingEmail not implemented")
+}
+func (UnimplementedNotificationServiceServer) SendLoginCode(context.Context, *SendLoginCodeRequest) (*SendLoginCodeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SendLoginCode not implemented")
 }
 func (UnimplementedNotificationServiceServer) mustEmbedUnimplementedNotificationServiceServer() {}
 func (UnimplementedNotificationServiceServer) testEmbeddedByValue()                             {}
@@ -139,6 +154,24 @@ func _NotificationService_SendDevicePairingEmail_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NotificationService_SendLoginCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendLoginCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationServiceServer).SendLoginCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotificationService_SendLoginCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationServiceServer).SendLoginCode(ctx, req.(*SendLoginCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NotificationService_ServiceDesc is the grpc.ServiceDesc for NotificationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -153,6 +186,10 @@ var NotificationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendDevicePairingEmail",
 			Handler:    _NotificationService_SendDevicePairingEmail_Handler,
+		},
+		{
+			MethodName: "SendLoginCode",
+			Handler:    _NotificationService_SendLoginCode_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

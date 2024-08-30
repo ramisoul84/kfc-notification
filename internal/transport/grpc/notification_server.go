@@ -106,3 +106,17 @@ func firstNonEmpty(vals ...string) string {
 	}
 	return ""
 }
+
+func (s *NotificationServer) SendLoginCode(
+	ctx context.Context,
+	req *notificationv1.SendLoginCodeRequest,
+) (*notificationv1.SendLoginCodeResponse, error) {
+	if req.GetPhone() == "" || req.GetCode() == "" {
+		return nil, status.Error(codes.InvalidArgument, "phone and code are required")
+	}
+	validFor := time.Duration(req.GetValidSeconds()) * time.Second
+	if err := s.notifier.SendLoginCode(ctx, req.GetPhone(), req.GetCode(), validFor); err != nil {
+		return nil, status.Error(codes.Internal, "failed to send login code")
+	}
+	return &notificationv1.SendLoginCodeResponse{Success: true}, nil
+}
