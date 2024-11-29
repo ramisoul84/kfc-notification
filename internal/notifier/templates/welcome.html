@@ -3,24 +3,97 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to KFC CRM</title>
 </head>
 
-<body style="font-family: Arial, sans-serif; color: #222; line-height: 1.5;">
-    <h2 style="margin-bottom: 16px;">Welcome to KFC CRM</h2>
+<body
+    style="margin:0; padding:0; background:#f4f4f7; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:#1f2937; line-height:1.6;">
 
-    <p>Hello,</p>
+    <!-- Outer wrapper: centers the card, provides background padding -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+        style="background:#f4f4f7; padding:32px 16px;">
+        <tr>
+            <td align="center">
 
-    <p>Your account has been created with the role <strong>{{.RoleName}}</strong>.</p>
+                <!-- Card -->
+                <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0"
+                    style="max-width:560px; width:100%; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);">
 
-    <p style="margin: 16px 0;">
-        <strong>Initial password:</strong>
-        <code style="background: #f4f4f4; padding: 2px 6px; border-radius: 4px;">{{.Password}}</code>
-    </p>
+                    <!-- Brand bar -->
+                    <tr>
+                        <td style="background:#c8102e; padding:20px 32px;">
+                            <span style="color:#ffffff; font-size:18px; font-weight:700; letter-spacing:0.3px;">KFC
+                                CRM</span>
+                        </td>
+                    </tr>
 
-    <p>For security, please log in and change your password immediately.</p>
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding:32px;">
 
-    <p style="margin-top: 24px; color: #666;">— KFC CRM</p>
+                            <h1 style="margin:0 0 16px; font-size:22px; font-weight:700; color:#111827;">Welcome aboard
+                            </h1>
+
+                            <p style="margin:0 0 16px; font-size:15px; color:#374151;">Hello,</p>
+
+                            <p style="margin:0 0 20px; font-size:15px; color:#374151;">
+                                Your account has been created with the role
+                                <strong style="color:#111827;">{{.RoleName}}</strong>.
+                            </p>
+
+                            <!-- Credentials box -->
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; margin:0 0 24px;">
+                                <tr>
+                                    <td style="padding:16px 20px;">
+                                        <div
+                                            style="font-size:12px; text-transform:uppercase; letter-spacing:0.6px; color:#6b7280; margin-bottom:6px;">
+                                            Initial password</div>
+                                        <code
+                                            style="font-family:'SF Mono', Menlo, Consolas, monospace; font-size:16px; color:#111827; background:#ffffff; padding:6px 10px; border-radius:6px; border:1px solid #e5e7eb; display:inline-block; word-break:break-all;">{{.Password}}</code>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin:0 0 20px; font-size:15px; color:#374151;">
+                                For security, please sign in and change your password immediately.
+                            </p>
+
+                            <!-- CTA button -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0"
+                                style="margin:0 0 8px;">
+                                <tr>
+                                    <td align="center" style="background:#c8102e; border-radius:8px;">
+                                        <a href="https://crm.kfc.ru/login"
+                                            style="display:inline-block; padding:12px 24px; font-size:15px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:8px;">
+                                            Sign in to CRM
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding:20px 32px 28px; border-top:1px solid #f3f4f6;">
+                            <p style="margin:0; font-size:13px; color:#9ca3af;">
+                                This is an automated message. Please do not reply.
+                            </p>
+                            <p style="margin:6px 0 0; font-size:13px; color:#9ca3af;">
+                                © KFC Russia
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
 </body>
 
 </html>
