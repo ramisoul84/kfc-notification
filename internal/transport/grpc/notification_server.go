@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -50,6 +51,49 @@ func (s *NotificationServer) SendWelcomeEmail(
 		NotificationId: uuid.NewString(),
 		SentAt:         timestamppb.Now(),
 	}, nil
+}
+
+func (s *NotificationServer) SendDevicePairingEmail(
+	ctx context.Context,
+	req *notificationv1.SendDevicePairingEmailRequest,
+) (*notificationv1.SendDevicePairingEmailResponse, error) {
+	if req.GetTo() == "" {
+		return nil, status.Error(codes.InvalidArgument, "recipient email required")
+	}
+	if len(req.GetDevices()) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "at least one device is required")
+	}
+
+	if err := s.notifier.SendDevicePairingEmail(ctx, &notifier.DevicePairingEmailInput{
+		To:             req.GetTo(),
+		RestaurantName: req.GetRestaurantName(),
+		ExpiresAt:      time.Unix(req.GetExpiresAt(), 0).UTC(),
+		Devices:        toNotifierDevices(req.GetDevices()),
+	}); err != nil {
+		s.logger.Error("device pairing email failed",
+			"to", req.GetTo(),
+			"error", err,
+		)
+		return nil, status.Error(codes.Internal, "failed to send device pairing email")
+	}
+
+	return &notificationv1.SendDevicePairingEmailResponse{
+		Success: true,
+		Message: "device pairing email sent",
+		SentAt:  timestamppb.Now(),
+	}, nil
+}
+
+func toNotifierDevices(in []*notificationv1.PairingItem) []notifier.DevicePairingItem {
+	out := make([]notifier.DevicePairingItem, 0, len(in))
+	for _, d := range in {
+		out = append(out, notifier.DevicePairingItem{
+			SerialNumber: d.GetSerialNumber(),
+			DeviceType:   d.GetDeviceType(),
+			Code:         d.GetCode(),
+		})
+	}
+	return out
 }
 
 // firstNonEmpty returns the first non-empty string.
